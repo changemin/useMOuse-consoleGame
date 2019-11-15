@@ -5,6 +5,7 @@
 
 #define CONSOLE_WIDTH 180
 #define CONSOLE_HEIGHT 48
+#define IMAGE_SCALE 16
 
 #define RESOLUTION_SCALE 16
 #define WINDOW_WIDTH (CONSOLE_WIDTH * RESOLUTION_SCALE)
@@ -35,7 +36,7 @@ inline void putBitmapToBackDC(HDC backDC, Image image, UINT transparentColor) {
 	SelectObject(bitmapDC, bitmap);
 
 	double scale = image.scale;
-	if (scale == 0) scale = 16;
+	if (scale == 0) scale = IMAGE_SCALE;
 
 	const Size bitmapSize = getBitmapSize(bitmap);
 	TransparentBlt(backDC, image.x, image.y, bitmapSize.width * scale, bitmapSize.height * scale,

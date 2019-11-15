@@ -23,6 +23,9 @@
 #define LIGHT_YELLOW "E"
 #define LIGHT_WHITE "F"
 
+#define FALSE 0
+#define TRUE 1
+
 INPUT_RECORD rec;
 DWORD dwNOER;
 HANDLE CIN = 0;
@@ -71,3 +74,17 @@ void gotoxy(int x, int y)
 	COORD pos = { x,y };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
+
+void CursorView(char show) //Ä¿¼­¼û±â±â
+{
+	HANDLE hConsole;
+	CONSOLE_CURSOR_INFO ConsoleCursor;
+
+	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	ConsoleCursor.bVisible = show;
+	ConsoleCursor.dwSize = 1;
+
+	SetConsoleCursorInfo(hConsole, &ConsoleCursor);
+}
+
