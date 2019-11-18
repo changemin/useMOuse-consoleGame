@@ -69,8 +69,15 @@ void Avoid1PMoveObjects(Thorn* thorn_s, main_char* Char_s, int MouseStatus) {
 }
 
 void Avoid2PInitObjects(Thorn* thorn_s, main_char* Char_s) {
-	Char_s->direction = 1;
+	Char_s[0].direction = 1;
+	Char_s[1].direction = 1;
 	for (int i = 0; i < thorn_n; i++) {
+		thorn_s[i].x = 0;
+		thorn_s[i].y = 1200 + i * 400;
+		thorn_s[i].direction = 1;
+		thorn_s[i].speed = 100;
+	}
+	for (int i = thorn_n; i < thorn_n*2; i++) {
 		thorn_s[i].x = 0;
 		thorn_s[i].y = 1200 + i * 400;
 		thorn_s[i].direction = 1;
@@ -78,10 +85,18 @@ void Avoid2PInitObjects(Thorn* thorn_s, main_char* Char_s) {
 	}
 }
 
-int Avoid2PCollisionCheck(Thorn* thorn, int direction) {
+int Avoid2PCollisionCheck(Thorn* thorn, main_char* Char_s) {
 	for (int i = 0; i < thorn_n; i++) {
 		if (thorn[i].y == 0) {
-			if (thorn[i].direction == direction) {
+			if (thorn[i].direction == Char_s[0].direction) {
+				return 1;
+			}
+			else return 0;
+		}
+	}
+	for (int i = thorn_n; i < thorn_n*2; i++) {
+		if (thorn[i].y == 0) {
+			if (thorn[i].direction == Char_s[1].direction) {
 				return 1;
 			}
 			else return 0;

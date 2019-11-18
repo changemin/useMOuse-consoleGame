@@ -17,7 +17,7 @@
 #define SCROLLED 4 // 스크롤 움직임
 #define SELECT_BUTTON 5 // 마우스 휠 버튼 
 
-#define HIT_MOUSE_TIMEOUT 3 //hit the mouse 게임 시간 제한(초)
+#define HIT_MOUSE_TIMEOUT 10 //hit the mouse 게임 시간 제한(초)
 
 int MouseStatus = 0;
 
@@ -57,7 +57,6 @@ DWORD __stdcall mouseInput(void* param)
 
 
 	}
-	SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), mode);
 }
 
 void MouseInputActivate() {
@@ -86,9 +85,9 @@ int StartStage() {
 	imageLayer.initialize(&imageLayer); //초기화
 	int selectCursor = 1;
 	Image startPage[3] = {
-		{"Intro_BG.bmp", 0, 0},
-		{"Intro_game_description.bmp", 0,0},
-		{"Intro_game_start.bmp", 0, 0}
+		{"StartPage_BG.bmp", 0, 0},
+		{"StartPage_GameStart.bmp", 0,0},
+		{"StartPage_GameExplain.bmp", 0, 0}
 	};
 	imageLayer.imageCount = 3;
 	imageLayer.images = startPage;
@@ -98,14 +97,14 @@ int StartStage() {
 		switch (selectCursor)
 		{
 			case 1: {
-				imageLayer.images[1].y = 600;
-				imageLayer.images[2].y = 0;
+				imageLayer.images[1].y = 0;
+				imageLayer.images[2].y = 600;
 				break;
 			}
 				
 			case 2: {
-				imageLayer.images[1].y = 0;
-				imageLayer.images[2].y = 600;
+				imageLayer.images[1].y = 600;
+				imageLayer.images[2].y = 0;
 				break;
 			}	
 		}
@@ -121,11 +120,12 @@ int StartStage() {
 int GameExplainStage() {
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
-	Image startPage[2] = {
-		{"ExplainPage.bmp", 0, 0},
-		{"mini_Selector.bmp",0,0}
+	Image startPage[3] = {
+		{"ExplainPage_BG.bmp", 0, 0},
+		{"ExplainPage_Home.bmp",0,0},
+		{"ExplainPage_GameSelect.bmp",0,0}
 	};
-	imageLayer.imageCount = 2;
+	imageLayer.imageCount = 3;
 	imageLayer.images = startPage;
 	imageLayer.fadeIn(&imageLayer);
 
@@ -135,8 +135,16 @@ int GameExplainStage() {
 		selectCursor = SelectFromN(MouseStatus, selectCursor, 2);
 		switch (selectCursor) 
 		{
-			case 1:imageLayer.images[1].x = 0; break;
-			case 2:imageLayer.images[1].x = 1400; break;
+			case 1: {
+				imageLayer.images[1].y = 0;
+				imageLayer.images[2].y = 1400;
+				break;
+			}
+			case 2: {
+				imageLayer.images[1].y = 1400;
+				imageLayer.images[2].y = 0;
+				break;
+			}
 		}
 		if (MouseStatus == SELECT_BUTTON) {
 			imageLayer.fadeOut(&imageLayer);
@@ -177,15 +185,13 @@ int gamePause() {
 int SelectGameStage() {
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
-	Image startPage[6] = {
-		{"GameSelectPage.bmp", 0, 0},
+	Image startPage[4] = {
+		{"GameSelectStage_BG.bmp", 0, 0},
 		{"thumbnail_avoidObstacle1P.bmp",0,0},
 		{"thumbnail_avoidObstacle2P.bmp",0,0},
-		{"thumbnail_avoidStar.bmp",0,0},
-		{"thumbnail_hitTheMouse.bmp",0,0},
-		{"thumbnail_goGoSled.bmp",0,0}
+		{"thumbnail_hitTheMouse.bmp",0,0}
 	};
-	imageLayer.imageCount = 6;
+	imageLayer.imageCount = 4;
 	imageLayer.images = startPage;
 	imageLayer.fadeIn(&imageLayer);
 
@@ -193,44 +199,27 @@ int SelectGameStage() {
 
 	while (1) {
 		Sleep(100);
-		selectCursor = SelectFromN(MouseStatus, selectCursor, 5);
+		selectCursor = SelectFromN(MouseStatus, selectCursor, 3);
 		switch (selectCursor)
 		{
-		case 1:
-			imageLayer.images[1].x = 0;
-			imageLayer.images[2].x = 700;
-			imageLayer.images[3].x = 1400;
-			imageLayer.images[4].x = 2100;
-			imageLayer.images[5].x = 2800;
-			break;
-		case 2:
-			imageLayer.images[1].x = -700;
-			imageLayer.images[2].x = 0;
-			imageLayer.images[3].x = 700;
-			imageLayer.images[4].x = 1400;
-			imageLayer.images[5].x = 2100;
-			break;
-		case 3:
-			imageLayer.images[1].x = -1400;
-			imageLayer.images[2].x = -700;
-			imageLayer.images[3].x = 0;
-			imageLayer.images[4].x = 700;
-			imageLayer.images[5].x = 1400;
-			break;
-		case 4:
-			imageLayer.images[1].x = -2100;
-			imageLayer.images[2].x = -1400;
-			imageLayer.images[3].x = -700;
-			imageLayer.images[4].x = 0;
-			imageLayer.images[5].x = 700;
-			break;
-		case 5:
-			imageLayer.images[1].x = -2800;
-			imageLayer.images[2].x = -2100;
-			imageLayer.images[3].x = -1400;
-			imageLayer.images[4].x = -700;
-			imageLayer.images[5].x = 0;
-			break;
+			case 1: {
+				imageLayer.images[1].x = 0;
+				imageLayer.images[2].x = 1100;
+				imageLayer.images[3].x = 2200;
+				break;
+			}
+			case 2: {
+				imageLayer.images[1].x = -1100;
+				imageLayer.images[2].x = 0;
+				imageLayer.images[3].x = 1100;
+				break;
+			}
+			case 3: {
+				imageLayer.images[1].x = -2200;
+				imageLayer.images[2].x = -1100;
+				imageLayer.images[3].x = 0;
+				break;
+			}
 		}
 		if (MouseStatus == SELECT_BUTTON) {
 			imageLayer.fadeOut(&imageLayer);
@@ -244,7 +233,7 @@ int SelectGameStage() {
 	}
 }
 
-int AvoidObstacle_1P() {
+int AvoidObstacle_1P(){
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	int selectCursor = 1;
@@ -255,16 +244,16 @@ int AvoidObstacle_1P() {
 	const int CountDown_3 = 8;
 	Image startPage[11] = {
 		{"AvoidObstacle1P_BG.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
+		{"AvoidObstacle1P_Obstacle_left.bmp", 0, -400},
+		{"AvoidObstacle1P_Obstacle_right.bmp", 0, -400},
+		{"AvoidObstacle1P_Obstacle_left.bmp", 0, -400},
+		{"AvoidObstacle1P_Obstacle_right.bmp", 0, -400},
+		{"AvoidObstacle1P_Obstacle_left.bmp", 0, -400},
+		{"AvoidObstacle1P_Obstacle_right.bmp", 0,-400},
 		{"AvoidObstacle1P_char.bmp", 0, 0},
-		{"HitTheMouseGame_3.bmp", 2000, 0},
-		{"HitTheMouseGame_2.bmp", 2000, 0},
-		{"HitTheMouseGame_1.bmp", 2000, 0}
+		{"CountDown_3.bmp", 2000, 0},
+		{"CountDown_2.bmp", 2000, 0},
+		{"CountDown_1.bmp", 2000, 0}
 	};
 	imageLayer.imageCount = 11;
 	imageLayer.images = startPage;
@@ -273,20 +262,20 @@ int AvoidObstacle_1P() {
 	int score = 100;
 	int BestScore = 100;
 	
-	/*Sleep(1000); // CountDown
-	imageLayer.images[2].x = 0;
+	Sleep(1000); // CountDown
+	imageLayer.images[CountDown_3].x = 0;
 	imageLayer.renderAll(&imageLayer);
 	Sleep(1000);
-	imageLayer.images[2].x = 2000;
-	imageLayer.images[3].x = 0;
+	imageLayer.images[CountDown_3].x = 2000;
+	imageLayer.images[CountDown_2].x = 0;
 	imageLayer.renderAll(&imageLayer);
 	Sleep(1000);
-	imageLayer.images[3].x = 2000;
-	imageLayer.images[4].x = 0;
+	imageLayer.images[CountDown_2].x = 2000;
+	imageLayer.images[CountDown_1].x = 0;
 	imageLayer.renderAll(&imageLayer);
 	Sleep(1000);
-	imageLayer.images[4].x = 2000;
-	imageLayer.renderAll(&imageLayer);*/
+	imageLayer.images[CountDown_1].x = 2000;
+	imageLayer.renderAll(&imageLayer);
 	
 	Thorn thorn[thorn_n];
 	main_char mainChar[1];
@@ -301,7 +290,7 @@ int AvoidObstacle_1P() {
 		if (mainChar->direction == 1) //Move Main Char
 			imageLayer.images[mainCharIndex].x = 0;
 		else if (mainChar->direction == 2)
-			imageLayer.images[mainCharIndex].x = 500;
+			imageLayer.images[mainCharIndex].x = 650;
 		for (int i = 1; i <= thorn_n; i++) { // paint thorns(가시)
 			if (thorn[i-1].direction == 1) {
 				imageLayer.images[i*2 - 1].x = 0;
@@ -325,6 +314,8 @@ int AvoidObstacle_1P() {
 			return score;
 		}
 		MouseStatus = 0;
+		gotoxy(155, 47);
+		printf("%d", score);
 		imageLayer.renderAll(&imageLayer);
 	}
 }
@@ -340,24 +331,24 @@ int AvoidObstacle_2P() {
 	const int CountDown_2 = 16;
 	const int CountDown_3 = 15;
 	Image startPage[18] = {
-		{"AvoidObstacle1P_BG.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_left.bmp", 0, 0},
-		{"AvoidObstacle1P_Obstacle_right.bmp", 0, 0},
-		{"AvoidObstacle1P_char.bmp", 0, 0},
-		{"AvoidObstacle1P_char.bmp", 0, 0},
-		{"HitTheMouseGame_3.bmp", 2000, 0},
-		{"HitTheMouseGame_2.bmp", 2000, 0},
-		{"HitTheMouseGame_1.bmp", 2000, 0}
+		{"AvoidObstacle2P_BG.bmp", 0, 0},
+		{"AvoidObstacle2P_LeftLeftObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_LeftRightObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_LeftLeftObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_LeftRightObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_LeftLeftObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_LeftRightObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_RightLeftObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_RightRightObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_RightLeftObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_RightRightObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_RightLeftObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_RightRightObstacle.bmp", 0, -300},
+		{"AvoidObstacle2P_LeftChar.bmp", 0, 0},
+		{"AvoidObstacle2P_RightChar.bmp", 0, 0},
+		{"CountDown_3.bmp", 2000, 0},
+		{"CountDown_2.bmp", 2000, 0},
+		{"CountDown_1.bmp", 2000, 0}
 	};
 	imageLayer.imageCount = 18;
 	imageLayer.images = startPage;
@@ -366,62 +357,78 @@ int AvoidObstacle_2P() {
 	int score = 100;
 	int BestScore = 100;
 
-	/*Sleep(1000); // CountDown
-	imageLayer.images[2].x = 0;
+	Sleep(1000); // CountDown
+	imageLayer.images[CountDown_3].x = 0;
 	imageLayer.renderAll(&imageLayer);
 	Sleep(1000);
-	imageLayer.images[2].x = 2000;
-	imageLayer.images[3].x = 0;
+	imageLayer.images[CountDown_3].x = 2000;
+	imageLayer.images[CountDown_2].x = 0;
 	imageLayer.renderAll(&imageLayer);
 	Sleep(1000);
-	imageLayer.images[3].x = 2000;
-	imageLayer.images[4].x = 0;
+	imageLayer.images[CountDown_2].x = 2000;
+	imageLayer.images[CountDown_1].x = 0;
 	imageLayer.renderAll(&imageLayer);
 	Sleep(1000);
-	imageLayer.images[4].x = 2000;
-	imageLayer.renderAll(&imageLayer);*/
+	imageLayer.images[CountDown_1].x = 2000;
+	imageLayer.renderAll(&imageLayer);
 
-	Thorn thorn[thorn_n*2];
+	Thorn thorn2P[thorn_n*2];
 	main_char mainChar[2];
-	Avoid2PInitObjects(thorn, mainChar);
+	Avoid2PInitObjects(thorn2P, mainChar);
 	clock_t start_time, current_time;
 	start_time = clock();
 	while (1) {
 		current_time = clock();
 		score = (current_time - start_time) / CLOCKS_PER_SEC * 100;
-		Avoid2PMoveObjects(thorn, mainChar, MouseStatus);
+		Avoid2PMoveObjects(thorn2P, mainChar, MouseStatus);
 
 		if (mainChar[0].direction == 1) //Move Main Char
-			imageLayer.images[mainCharLeftIndex].x = -500;
+			imageLayer.images[mainCharLeftIndex].x = 0;
 		else if (mainChar[0].direction == 2)
-			imageLayer.images[mainCharLeftIndex].x = 100;
+			imageLayer.images[mainCharLeftIndex].x = 500;
 		if (mainChar[1].direction == 1)
 			imageLayer.images[mainCharRightIndex].x = 0;
 		else if (mainChar[1].direction == 2)
-			imageLayer.images[mainCharRightIndex].x = 600;
+			imageLayer.images[mainCharRightIndex].x = 500;
 		
-		for (int i = 1; i <= thorn_n*2; i++) { // paint thorns(가시)
-			if (thorn[i - 1].direction == 1) {
+		for (int i = 1; i <= thorn_n; i++) { // paint LEFT thorns
+			if (thorn2P[i - 1].direction == 1) {
 				imageLayer.images[i * 2 - 1].x = 0;
-				imageLayer.images[i * 2 - 1].y = thorn[i - 1].y;
+				imageLayer.images[i * 2 - 1].y = thorn2P[i - 1].y;
 				imageLayer.images[i * 2].x = 2000;
-				imageLayer.images[i * 2].y = thorn[i - 1].y;
+				imageLayer.images[i * 2].y = thorn2P[i - 1].y;
 			}
-			else if (thorn[i - 1].direction == 2) {
+			else if (thorn2P[i - 1].direction == 2) {
 				imageLayer.images[i * 2 - 1].x = 2000;
-				imageLayer.images[i * 2 - 1].y = thorn[i - 1].y;
+				imageLayer.images[i * 2 - 1].y = thorn2P[i - 1].y;
 				imageLayer.images[i * 2].x = 0;
-				imageLayer.images[i * 2].y = thorn[i - 1].y;
+				imageLayer.images[i * 2].y = thorn2P[i - 1].y;
+			}
+		}
+		for (int i = thorn_n; i <= thorn_n*2; i++) { // paint RIGHT thorns
+			if (thorn2P[i - 1].direction == 1) {
+				imageLayer.images[i * 2 - 1].x = 0;
+				imageLayer.images[i * 2 - 1].y = thorn2P[i - 1].y;
+				imageLayer.images[i * 2].x = 2000;
+				imageLayer.images[i * 2].y = thorn2P[i - 1].y;
+			}
+			else if (thorn2P[i - 1].direction == 2) {
+				imageLayer.images[i * 2 - 1].x =2000;
+				imageLayer.images[i * 2 - 1].y = thorn2P[i - 1].y;
+				imageLayer.images[i * 2].x = 0;
+				imageLayer.images[i * 2].y = thorn2P[i - 1].y;
 			}
 		}
 
 		if (MouseStatus == SELECT_BUTTON) {
 			imageLayer.fadeOut(&imageLayer);
-			return 0;
+			return 1;
 		}
-		/*if (Avoid2PCollisionCheck(thorn, mainChar->direction) == 1) {
+		if (Avoid2PCollisionCheck(thorn2P, mainChar) == 1) {
 			return score;
-		}*/
+		}
+		gotoxy(167, 47);
+		printf("%d", score);
 		MouseStatus = 0;
 		imageLayer.renderAll(&imageLayer);
 	}
@@ -431,13 +438,14 @@ int HitTheMouseGameStage() {
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	int selectCursor = 1;
-	Image startPage[4] = {
-		{"HitTheMouseGame_BG.bmp", 0, 0},
-		{"HitTheMouseGame_3.bmp", 2000, 0},
-		{"HitTheMouseGame_2.bmp", 2000, 0},
-		{"HitTheMouseGame_1.bmp", 2000, 0}
+	Image startPage[5] = {
+		{"HitTheMouse_BG.bmp", 0, 0},
+		{"CountDown_3.bmp", 2000, 0},
+		{"CountDown_2.bmp", 2000, 0},
+		{"CountDown_1.bmp", 2000, 0},
+		{"HitTheMouse_TimeOut.bmp", 2000,0}
 	};
-	imageLayer.imageCount = 4;
+	imageLayer.imageCount = 5;
 	imageLayer.images = startPage;
 	imageLayer.fadeIn(&imageLayer);
 
@@ -466,7 +474,7 @@ int HitTheMouseGameStage() {
 			if (MouseStatus == LEFT_BUTTON || MouseStatus == RIGHT_BUTTON) {
 				score++;
 			}
-			gotoxy(90, 24);
+			gotoxy(95, 33);
 			printf("%d", score);
 			if (MouseStatus == SELECT_BUTTON) {
 				imageLayer.fadeOut(&imageLayer);
@@ -475,9 +483,9 @@ int HitTheMouseGameStage() {
 			MouseStatus = 0;
 		}
 		else {
-			imageLayer.images[3].x = 0;
+			imageLayer.images[4].x = 0;
 			Sleep(1000);
-			gotoxy(0, 0);
+
 			imageLayer.fadeOut(&imageLayer);
 			return score;
 		}
@@ -485,6 +493,9 @@ int HitTheMouseGameStage() {
 	}
 }
 
+int AvoidStar() {
+	return 1;
+}
 int ShowScoreStage(int score) {
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
@@ -518,7 +529,7 @@ int ShowScoreStage(int score) {
 		}
 		MouseStatus = 0;
 		imageLayer.renderAll(&imageLayer);
-		gotoxy(80, 25);
+		gotoxy(100, 34);
 		printf("%d", score);
 	}
 }

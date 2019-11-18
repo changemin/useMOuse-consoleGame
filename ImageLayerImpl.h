@@ -4,14 +4,14 @@
 #include "ImageLayer.h"
 
 #define CONSOLE_WIDTH 180
-#define CONSOLE_HEIGHT 48
-#define IMAGE_SCALE 16
+#define CONSOLE_HEIGHT 50
+#define IMAGE_SCALE 2
 
 #define RESOLUTION_SCALE 16
 #define WINDOW_WIDTH (CONSOLE_WIDTH * RESOLUTION_SCALE)
 #define WINDOW_HEIGHT (CONSOLE_HEIGHT * RESOLUTION_SCALE*2)
 
-typedef struct {
+typedef struct{
 	int width, height;
 }Size;
 
