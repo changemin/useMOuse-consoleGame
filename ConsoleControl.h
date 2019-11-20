@@ -1,3 +1,6 @@
+/*
+ConsoleControl.h는 콘솔창 제어 관련 함수들을 포함한다. 
+*/
 #pragma once
 
 #include<stdio.h>
@@ -30,21 +33,21 @@ INPUT_RECORD rec;
 DWORD dwNOER;
 HANDLE CIN = 0;
 
-int setDisplayColor(char BGColor, char TextColor) //setDisplayColor(배경색, 글자색)으로 사용한다.
+int setDisplayColor(char BGColor, char TextColor) //setDisplayColor(배경색, 글자색), 배경색과 텍스트 색상을 지정해준다. 
 {
 	char chTemp[100];
 	sprintf(chTemp, "COLOR %c%c", BGColor, TextColor);
 	system(chTemp);
 }
 
-void setDisplaySize(int width, int height) // setDisplaySize(가로, 세로)로 사용, 콘솔창의 크기를 지정해준다.
+void setDisplaySize(int width, int height) // setDisplaySize(가로, 세로), 콘솔창의 가로세로 크기를 지정해준다. 
 {
 	char chTemp[100];
 	sprintf(chTemp, "mode con cols=%d lines=%d", width, height);
 	system(chTemp);
 }
 
-void clean() //콘솔창 리셋
+void clean() //콘솔창 리셋 및 지우기
 {
 	system("cls");
 }
@@ -69,13 +72,13 @@ void displayAllColor(int count, int interval)  // displayAllColor(반복 횟수, 색�
 	}
 }
 
-void gotoxy(int x, int y)
+void gotoxy(int x, int y) // 콘솔창 위의 커서를 x,y로 옮겨 준다. 
 {
 	COORD pos = { x,y };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
-void CursorView(char show) //커서숨기기
+void CursorView(char show) //커서숨기기(True = 보임, False=안보임)
 {
 	HANDLE hConsole;
 	CONSOLE_CURSOR_INFO ConsoleCursor;

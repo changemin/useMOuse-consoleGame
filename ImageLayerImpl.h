@@ -11,18 +11,18 @@
 #define WINDOW_WIDTH (CONSOLE_WIDTH * RESOLUTION_SCALE)
 #define WINDOW_HEIGHT (CONSOLE_HEIGHT * RESOLUTION_SCALE*2)
 
-typedef struct{
+typedef struct{ // 가로 세로 구조체 선언
 	int width, height;
 }Size;
 
-inline Size getBitmapSize(HBITMAP bitmap) {
+inline Size getBitmapSize(HBITMAP bitmap) { //콘솔창의 비트맵 사이즈를 리턴한다. 
 	BITMAP tmpBitmap;
 	GetObject(bitmap, sizeof(BITMAP), &tmpBitmap);
 	const Size bitmapSize = { tmpBitmap.bmWidth, tmpBitmap.bmHeight };
 	return bitmapSize;
 }
 
-inline HDC createNewBackDC(HDC compatibleDC) {
+inline HDC createNewBackDC(HDC compatibleDC) { //뒷배경을 생성한다. 
 	const HDC backDC = CreateCompatibleDC(compatibleDC);
 	const HBITMAP backBitmap = CreateCompatibleBitmap(compatibleDC, WINDOW_WIDTH, WINDOW_HEIGHT);
 	SelectObject(backDC, backBitmap);
@@ -30,7 +30,7 @@ inline HDC createNewBackDC(HDC compatibleDC) {
 	return backDC;
 }
 
-inline void putBitmapToBackDC(HDC backDC, Image image, UINT transparentColor) {
+inline void putBitmapToBackDC(HDC backDC, Image image, UINT transparentColor) { // 비트맵을 뒷배경에 복사한다. 
 	const HDC bitmapDC = CreateCompatibleDC(backDC);
 	const HBITMAP bitmap = (HBITMAP)LoadImage(NULL, (LPCWSTR)image.fileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	SelectObject(bitmapDC, bitmap);
@@ -46,17 +46,17 @@ inline void putBitmapToBackDC(HDC backDC, Image image, UINT transparentColor) {
 	DeleteDC(bitmapDC);
 }
 
-inline void applyToConsoleDC(HDC consoleDC, HDC srcDC) {
+inline void applyToConsoleDC(HDC consoleDC, HDC srcDC) { // 콘솔창에 적용한다. 
 	BitBlt(consoleDC, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
 		srcDC, 0, 0, SRCCOPY);
 }
 
-inline void _initialize(ImageLayer* self) {
+inline void _initialize(ImageLayer* self) { // init, 선언
 	self->_windowHandle = GetConsoleWindow();
 	self->_consoleDC = GetDC(self->_windowHandle);
 }
 
-inline HDC getRenderedBackDC(ImageLayer* self) {
+inline HDC getRenderedBackDC(ImageLayer* self) { // 렌더가 된 뒷 배경을 불러온다. 
 	const HDC backDC = createNewBackDC(self->_consoleDC);
 
 	for (int i = 0; i < self->imageCount; i++) {
@@ -65,13 +65,13 @@ inline HDC getRenderedBackDC(ImageLayer* self) {
 	return backDC;
 }
 
-inline void _renderAll(ImageLayer* self) {
+inline void _renderAll(ImageLayer* self) { // 변경사항을 렌더링 해서 보여준다. 
 	const HDC backDC = getRenderedBackDC(self);
 	applyToConsoleDC(self->_consoleDC, backDC);
 	DeleteDC(backDC);
 }
 
-inline BLENDFUNCTION getBlendFunction() {
+inline BLENDFUNCTION getBlendFunction() { // 투명도 처리를 하기 위한 함수
 	BLENDFUNCTION bf;
 	bf.AlphaFormat = AC_SRC_ALPHA;
 	bf.BlendFlags = 0;
@@ -80,7 +80,7 @@ inline BLENDFUNCTION getBlendFunction() {
 	return bf;
 }
 
-inline void _renderAndFadeIn(ImageLayer* self) {
+inline void _renderAndFadeIn(ImageLayer* self) { // 어두운 화면부터 부드럽게 들어오는 효과를 낸다. 
 	const HDC consoleDC = self->_consoleDC;
 	const HDC backDC = getRenderedBackDC(self);
 
@@ -100,25 +100,29 @@ inline void _renderAndFadeIn(ImageLayer* self) {
 	DeleteDC(backDC);
 }
 
-inline void _renderAndFadeOut(ImageLayer* self) {
+inline void applyToDC(HDC dstDC, HDC srcDC) { // DC에 적용한다. 
+	BitBlt(dstDC, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+		srcDC, 0, 0, SRCCOPY);
+}
+
+inline void _renderAndFadeOut(ImageLayer* self) { // 검정 화면과 함께 부드럽게 화면이 꺼진다. 
 	const HDC consoleDC = self->_consoleDC;
 	const HDC backDC = getRenderedBackDC(self);
-	applyToConsoleDC(consoleDC, backDC);
+	if (applyToDC != NULL) applyToDC(consoleDC, backDC);
+	applyToDC(consoleDC, backDC);
 
-	const HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));
-	SelectObject(consoleDC, blackBrush);
-
+	const HDC blackDC = createNewBackDC(consoleDC);
 	BLENDFUNCTION bf = getBlendFunction();
 
-	for (int i = 255; i > 0; i -= 20) {
-		Rectangle(consoleDC, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	for (int i = 255; i >= 0; i -= 20) {
 		bf.SourceConstantAlpha = i;
+		applyToDC(consoleDC, blackDC);
 		AlphaBlend(consoleDC, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
 			backDC, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, bf);
-		Sleep(100);
+		//Sleep(60);
 	}
-	Rectangle(consoleDC, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	applyToDC(consoleDC, blackDC);
 
-	DeleteObject(blackBrush);
 	DeleteDC(backDC);
+	DeleteDC(blackDC);
 }
