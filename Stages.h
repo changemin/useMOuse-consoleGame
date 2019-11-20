@@ -1,3 +1,6 @@
+/*
+Stages.h는 모든 스테이지들에 대한 정보들을 포함한다. 
+*/
 #pragma once
 
 #include<stdio.h>
@@ -17,18 +20,22 @@
 #define SCROLLED 4 // 스크롤 움직임
 #define SELECT_BUTTON 5 // 마우스 휠 버튼 
 
-#define HIT_MOUSE_TIMEOUT 10 //hit the mouse 게임 시간 제한(초)
+#define HIT_MOUSE_TIMEOUT 10 //마우스를 괴롭혀라 게임 시간 제한(초)
+
+#define Idx_AvoidObstacle1P 0 // 운석을 피해라 1P에 대한 게임 인덱스
+#define Idx_AvoidObstacle2P 1 // 운석을 피해라 1P에 대한 게임 인덱스
+#define Idx_HitTheMouse 2 // 마우스를 괴롭혀라에 대한 게임 인덱스
 
 int MouseStatus = 0;
 
-void enableMouseInput() {
+void enableMouseInput() {// 마우스 입력을 활성화 시킨다. 
 	HWND CONSOLE_INPUT = GetStdHandle(STD_INPUT_HANDLE);
 	DWORD mode;
 	GetConsoleMode(CONSOLE_INPUT, &mode);
 	SetConsoleMode(CONSOLE_INPUT, mode | ENABLE_MOUSE_INPUT);
 }
 
-DWORD __stdcall mouseInput(void* param)
+DWORD __stdcall mouseInput(void* param) // 마우스 입력을 받아서 MouseStatus에 저장하는 함수 Thread로 돌아간다. 
 {
 	INPUT_RECORD rec;
 	DWORD dwNOER;
@@ -50,8 +57,10 @@ DWORD __stdcall mouseInput(void* param)
 			MouseStatus = 3;
 		else if (EventFlags & MOUSE_WHEELED)
 			MouseStatus = 4;
-		else if (ButtonState & MOUSE_WHEELED)
+		else if (ButtonState & MOUSE_WHEELED) {
 			MouseStatus = 5;
+			PlayNewMusic("BGM_WhenSelect");
+		}
 		else
 			MouseStatus = 0;
 
@@ -59,12 +68,12 @@ DWORD __stdcall mouseInput(void* param)
 	}
 }
 
-void MouseInputActivate() {
+void MouseInputActivate() { // 마우스 입력을 활성화 시킨다. 
 	HWND hWnd = GetConsoleWindow();
-	CreateThread(NULL, 8 * 1024 * 1024, mouseInput, &hWnd, NULL, NULL);
+	CreateThread(NULL, 8 * 128 * 128, mouseInput, &hWnd, NULL, NULL);
 }
 
-int SelectFromN(int ButtonStatus, int LastChoice, int maxChoice) {
+int SelectFromN(int ButtonStatus, int LastChoice, int maxChoice) { // 게임과 같은 느낌을 내기 위해서 마우스 만을 사용하여 여러가지 선택지 중에서 한가지를 선택할 수 있게 해준다. 
 	int Current = LastChoice;
 	switch (ButtonStatus) {
 		case RIGHT_BUTTON:Current++; break;
@@ -80,7 +89,8 @@ int SelectFromN(int ButtonStatus, int LastChoice, int maxChoice) {
 	return Current;
 }
 
-int StartStage() {
+int StartStage() { // 시작 페이지
+	PlayMusic("BGM_StartPage.mp3", 1);
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	int selectCursor = 1;
@@ -98,18 +108,19 @@ int StartStage() {
 		{
 			case 1: {
 				imageLayer.images[1].y = 0;
-				imageLayer.images[2].y = 600;
+				imageLayer.images[2].y = 700;
 				break;
 			}
 				
 			case 2: {
-				imageLayer.images[1].y = 600;
+				imageLayer.images[1].y = 700;
 				imageLayer.images[2].y = 0;
 				break;
 			}	
 		}
 		if (MouseStatus == 5) {
 			imageLayer.fadeOut(&imageLayer);
+			PlayMusic("BGM_StartPage.mp3", 0);
 			return selectCursor;
 		}
 		MouseStatus = 0;
@@ -117,7 +128,8 @@ int StartStage() {
 	}
 }
 
-int GameExplainStage() {
+int GameExplainStage() { // 게임 설명 페이지 
+	PlayMusic("BGM_GameExplainPage.mp3", 1);
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	Image startPage[3] = {
@@ -148,6 +160,7 @@ int GameExplainStage() {
 		}
 		if (MouseStatus == SELECT_BUTTON) {
 			imageLayer.fadeOut(&imageLayer);
+			PlayMusic("BGM_GameExplainPage.mp3", 0);
 			return selectCursor;
 		}
 		MouseStatus = 0;
@@ -155,7 +168,7 @@ int GameExplainStage() {
 	}
 }
 
-int gamePause() {
+int gamePause() { // 게임 멈춤
 	ImageLayer popUp = DEFAULT_IMAGE_LAYER;
 	popUp.initialize(&popUp); //초기화
 	Image startPage[3] = {
@@ -182,7 +195,8 @@ int gamePause() {
 	}
 }
 
-int SelectGameStage() {
+int SelectGameStage() { // 게임 선택 페이지 
+	PlayMusic("BGM_GameSelect.mp3", 1);
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	Image startPage[4] = {
@@ -198,34 +212,43 @@ int SelectGameStage() {
 	int selectCursor = 1;
 
 	while (1) {
-		Sleep(100);
+
 		selectCursor = SelectFromN(MouseStatus, selectCursor, 3);
 		switch (selectCursor)
 		{
+			
 			case 1: {
 				imageLayer.images[1].x = 0;
 				imageLayer.images[2].x = 1100;
 				imageLayer.images[3].x = 2200;
+				gotoxy(93, 17);
+				printf("%d    ", ReadBestScore(Idx_AvoidObstacle1P));
 				break;
 			}
 			case 2: {
 				imageLayer.images[1].x = -1100;
 				imageLayer.images[2].x = 0;
 				imageLayer.images[3].x = 1100;
+				gotoxy(93, 17);
+				printf("%d    ", ReadBestScore(Idx_AvoidObstacle2P));
 				break;
 			}
 			case 3: {
 				imageLayer.images[1].x = -2200;
 				imageLayer.images[2].x = -1100;
 				imageLayer.images[3].x = 0;
+				gotoxy(93, 17);
+				printf("%d    ", ReadBestScore(Idx_HitTheMouse));
 				break;
 			}
 		}
 		if (MouseStatus == SELECT_BUTTON) {
 			imageLayer.fadeOut(&imageLayer);
+			PlayMusic("BGM_GameSelect.mp3", 0);
 			return selectCursor;
 		}
 		if (MouseStatus == SAME_BUTTON) {
+			PlayMusic("BGM_GameSelect.mp3", 0);
 			return 0;
 		}
 		MouseStatus = 0;
@@ -233,7 +256,8 @@ int SelectGameStage() {
 	}
 }
 
-int AvoidObstacle_1P(){
+int AvoidObstacle_1P() { // 운석을 피해라 1P 게임 
+	PlayMusic("BGM_AvoidObstacleGame.mp3", 1);
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	int selectCursor = 1;
@@ -261,7 +285,7 @@ int AvoidObstacle_1P(){
 
 	int score = 100;
 	int BestScore = 100;
-	
+
 	Sleep(1000); // CountDown
 	imageLayer.images[CountDown_3].x = 0;
 	imageLayer.renderAll(&imageLayer);
@@ -276,7 +300,7 @@ int AvoidObstacle_1P(){
 	Sleep(1000);
 	imageLayer.images[CountDown_1].x = 2000;
 	imageLayer.renderAll(&imageLayer);
-	
+
 	Thorn thorn[thorn_n];
 	main_char mainChar[1];
 	Avoid1PInitObjects(thorn, mainChar);
@@ -284,33 +308,35 @@ int AvoidObstacle_1P(){
 	start_time = clock();
 	while (1) {
 		current_time = clock();
-		score = (current_time - start_time)/CLOCKS_PER_SEC*100;
+		score = (current_time - start_time) / CLOCKS_PER_SEC * 100;
 		Avoid1PMoveObjects(thorn, mainChar, MouseStatus);
-		
+
 		if (mainChar->direction == 1) //Move Main Char
 			imageLayer.images[mainCharIndex].x = 0;
 		else if (mainChar->direction == 2)
 			imageLayer.images[mainCharIndex].x = 650;
 		for (int i = 1; i <= thorn_n; i++) { // paint thorns(가시)
-			if (thorn[i-1].direction == 1) {
-				imageLayer.images[i*2 - 1].x = 0;
-				imageLayer.images[i*2 - 1].y = thorn[i-1].y;
-				imageLayer.images[i*2].x = 2000;
-				imageLayer.images[i*2].y = thorn[i-1].y;
+			if (thorn[i - 1].direction == 1) {
+				imageLayer.images[i * 2 - 1].x = 0;
+				imageLayer.images[i * 2 - 1].y = thorn[i - 1].y;
+				imageLayer.images[i * 2].x = 2000;
+				imageLayer.images[i * 2].y = thorn[i - 1].y;
 			}
-			else if (thorn[i-1].direction == 2) {
-				imageLayer.images[i*2-1].x = 2000;
-				imageLayer.images[i*2-1].y = thorn[i-1].y;
-				imageLayer.images[i*2].x = 0;
-				imageLayer.images[i*2].y = thorn[i-1].y;
+			else if (thorn[i - 1].direction == 2) {
+				imageLayer.images[i * 2 - 1].x = 2000;
+				imageLayer.images[i * 2 - 1].y = thorn[i - 1].y;
+				imageLayer.images[i * 2].x = 0;
+				imageLayer.images[i * 2].y = thorn[i - 1].y;
 			}
 		}
 
 		if (MouseStatus == SELECT_BUTTON) {
+			PlayMusic("BGM_AvoidObstacleGame.mp3", 0);
 			imageLayer.fadeOut(&imageLayer);
 			return 0;
 		}
 		if (Avoid1PCollisionCheck(thorn, mainChar->direction) == 1) {
+			PlayMusic("BGM_AvoidObstacleGame.mp3", 0);
 			return score;
 		}
 		MouseStatus = 0;
@@ -320,7 +346,8 @@ int AvoidObstacle_1P(){
 	}
 }
 
-int AvoidObstacle_2P() {
+int AvoidObstacle_2P() { // 운석을 피해라 2P 게임 
+	PlayMusic("BGM_AvoidObstacleGame.mp3", 1);
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	int selectCursor = 1;
@@ -383,13 +410,13 @@ int AvoidObstacle_2P() {
 		Avoid2PMoveObjects(thorn2P, mainChar, MouseStatus);
 
 		if (mainChar[0].direction == 1) //Move Main Char
-			imageLayer.images[mainCharLeftIndex].x = 0;
+			imageLayer.images[mainCharLeftIndex].x = mainChar[0].x;
 		else if (mainChar[0].direction == 2)
-			imageLayer.images[mainCharLeftIndex].x = 500;
+			imageLayer.images[mainCharLeftIndex].x = mainChar[0].x;
 		if (mainChar[1].direction == 1)
-			imageLayer.images[mainCharRightIndex].x = 0;
+			imageLayer.images[mainCharRightIndex].x = mainChar[1].x;
 		else if (mainChar[1].direction == 2)
-			imageLayer.images[mainCharRightIndex].x = 500;
+			imageLayer.images[mainCharRightIndex].x = mainChar[1].x;
 		
 		for (int i = 1; i <= thorn_n; i++) { // paint LEFT thorns
 			if (thorn2P[i - 1].direction == 1) {
@@ -421,10 +448,12 @@ int AvoidObstacle_2P() {
 		}
 
 		if (MouseStatus == SELECT_BUTTON) {
+			PlayMusic("BGM_AvoidObstacleGame.mp3", 0);
 			imageLayer.fadeOut(&imageLayer);
 			return 1;
 		}
 		if (Avoid2PCollisionCheck(thorn2P, mainChar) == 1) {
+			PlayMusic("BGM_AvoidObstacleGame.mp3", 0);
 			return score;
 		}
 		gotoxy(167, 47);
@@ -434,7 +463,7 @@ int AvoidObstacle_2P() {
 	}
 }
 
-int HitTheMouseGameStage() {
+int HitTheMouseGameStage() { // 마우스를 괴롭혀라 게임 
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	int selectCursor = 1;
@@ -493,10 +522,8 @@ int HitTheMouseGameStage() {
 	}
 }
 
-int AvoidStar() {
-	return 1;
-}
-int ShowScoreStage(int score) {
+int ShowScoreStage(int score, int GameIdx) { // 게임 오버 후 , 점수를 출력해주는 함수 .
+	PlayMusic("BGM_GameOverBG.mp3", 1);
 	ImageLayer imageLayer = DEFAULT_IMAGE_LAYER;
 	imageLayer.initialize(&imageLayer); //초기화
 	int selectCursor = 1;
@@ -508,6 +535,7 @@ int ShowScoreStage(int score) {
 	imageLayer.imageCount = 3;
 	imageLayer.images = startPage;
 	imageLayer.renderAll(&imageLayer);
+	RecordIfBestScore(GameIdx, score);
 	while (1) {
 		selectCursor = SelectFromN(MouseStatus, selectCursor, 2);
 		switch (selectCursor)
@@ -524,6 +552,7 @@ int ShowScoreStage(int score) {
 			}
 		}
 		if (MouseStatus == 5) {
+			PlayMusic("BGM_GameOverBG.mp3", 0);
 			imageLayer.fadeOut(&imageLayer);
 			return selectCursor;
 		}
